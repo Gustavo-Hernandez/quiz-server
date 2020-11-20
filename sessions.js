@@ -5,7 +5,7 @@ const io = require("socket.io");
 
 const activeSessions = [];
 router.get("/api/sessions", (req, res) => {
-  return res.status(200).json({ success: true, sessions: activeSessions });
+  return res.json({ success: true, sessions: activeSessions });
 });
 
 router.post("/api/create-session", (req, res) => {
@@ -17,54 +17,59 @@ router.post("/api/create-session", (req, res) => {
   };
   activeSessions.push(newSession);
   console.log(activeSessions);
-  return res
-    .status(200)
-    .json({
-      success: true,
-      message: "Session created successfully",
-      session: newSession,
-    });
+  return res.json({
+    success: true,
+    message: "Session created successfully",
+    session: newSession,
+  });
 });
 
 router.post("/api/close-session", (req, res) => {
   const index = findSessionIndex(req.body.pin);
   if (index >= 0) {
     activeSessions.splice(index, 1);
-    return res
-      .status(200)
-      .json({ success: true, message: "Session closed successfully" });
+    return res.json({ success: true, message: "Session closed successfully" });
   }
-  return res
-    .status(422)
-    .json({ success: false, message: "Unexistent session" });
+  return res.json({ success: false, message: "Unexistent session" });
 });
 
 router.post("/api/join-session", (req, res) => {
   const { pin, username } = req.body;
   const index = findSessionIndex(pin);
-  if (username && username.length > 0 ) {
+ 
+  if (username && username.length > 0) {
     if (index >= 0) {
-        activeSessions[index].participants.push({ username });
-        return res
-          .status(200)
-          .json({ success: true, message: "Joined successfully" });
-      }
-      return res
-        .status(422)
-        .json({ success: false, message: "Unexistent session" });
-  }else{
-    return res
-        .status(422)
-        .json({ success: false, message: "You must provide an username" });
+      let tempId = username + Date.now();
+      activeSessions[index].participants.push({
+        username,
+        score: 0,
+        localId: tempId
+      });
+      return res.json({
+        success: true,
+        message: "Joined successfully",
+        user: {
+          username,
+          score: 0,
+          localId: tempId
+        },
+      });
+    }
+    return res.json({ success: false, message: "Unexistent session" });
+  } else {
+    return res.json({
+      success: false,
+      message: "You must provide an username",
+    });
   }
 });
 
 function generatePin() {
-  const pinLength = 6;
+  const pinLength = 9;
   const possibleValues = "0123456789";
   let pin = "";
-  for (let i = 0; i <= pinLength; i++) {
-    let randomIndex = Math.round(Math.random() * possibleValues.length - 1);
+  for (var i = 0; i < pinLength; i++) {
+    let randomIndex = Math.round(Math.random() * 8);
     pin += possibleValues.charAt(randomIndex);
   }
   if (!pinIsUnique(pin)) {
