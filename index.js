@@ -23,27 +23,35 @@ const io = require("socket.io")(server, {
 });
 
 io.on("connection", (socket) => {
-   console.log("new connection");
-  //Broadcast when an user connects.
-  socket.broadcast.emit("message", {
-    sender: "server",
-    message: "A user has joined the chat.",
-  });
+  console.log("new connection");
 
-  //Welcome user on connection.
-  socket.emit("message", {
-    sender: "server",
-    message: "Welcome to your OCA session.",
+  socket.on("join_room", ({ username , room }) => {
+    socket.join(room);
+    //Welcome user on connection.
+    socket.emit("message", {
+      sender: "server",
+      message: "Welcome to your OCA session.",
+    });
+
+    //Broadcast when an user connects.
+    socket.broadcast.to(room).emit("message", {
+      sender: "server",
+      message: `${username} has joined the chat.`,
+    });
+
+    
   });
 
   //Listen for a chatMessage
-  socket.on("chatMessage", ({sender, message}) => {
-    io.emit("message", {
-        sender,
-        message,
-      });
+  socket.on("chatMessage", ({ sender, message, room }) => {
+    console.log(`Handled Message ${room}, ${sender}`);
+    io.to(room).emit("message", {
+      sender,
+      message,
+    });
   });
 
+  //Listen for teacher feedback
   socket.on("teacher_feedback", (msg) => {
     console.log(msg);
   });
@@ -51,9 +59,5 @@ io.on("connection", (socket) => {
   //Let users know when someone leaves the chat.
   socket.on("disconnect", () => {
     console.log("User disconnection");
-    io.emit("message", {
-      sender: "server",
-      message: "A user has left the chat",
-    });
   });
 });
