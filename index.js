@@ -22,6 +22,38 @@ const io = require("socket.io")(server, {
   },
 });
 
-io.on("connection", () => {
-  console.log("Connected.");
+io.on("connection", (socket) => {
+   console.log("new connection");
+  //Broadcast when an user connects.
+  socket.broadcast.emit("message", {
+    sender: "server",
+    message: "A user has joined the chat.",
+  });
+
+  //Welcome user on connection.
+  socket.emit("message", {
+    sender: "server",
+    message: "Welcome to your OCA session.",
+  });
+
+  //Listen for a chatMessage
+  socket.on("chatMessage", ({sender, message}) => {
+    io.emit("message", {
+        sender,
+        message,
+      });
+  });
+
+  socket.on("teacher_feedback", (msg) => {
+    console.log(msg);
+  });
+
+  //Let users know when someone leaves the chat.
+  socket.on("disconnect", () => {
+    console.log("User disconnection");
+    io.emit("message", {
+      sender: "server",
+      message: "A user has left the chat",
+    });
+  });
 });
