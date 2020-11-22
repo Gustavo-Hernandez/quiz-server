@@ -25,7 +25,7 @@ const io = require("socket.io")(server, {
 io.on("connection", (socket) => {
   console.log("new connection");
 
-  socket.on("join_room", ({ username , room }) => {
+  socket.on("join_room", ({ username, room }) => {
     socket.join(room);
     //Welcome user on connection.
     socket.emit("message", {
@@ -38,13 +38,10 @@ io.on("connection", (socket) => {
       sender: "server",
       message: `${username} has joined the chat.`,
     });
-
-    
   });
 
   //Listen for a chatMessage
   socket.on("chatMessage", ({ sender, message, room }) => {
-    console.log(`Handled Message ${room}, ${sender}`);
     io.to(room).emit("message", {
       sender,
       message,
@@ -52,8 +49,8 @@ io.on("connection", (socket) => {
   });
 
   //Listen for teacher feedback
-  socket.on("teacher_feedback", (msg) => {
-    console.log(msg);
+  socket.on("teacher_feedback", ({message, room}) => {
+    io.to(room).emit("feedback", message);
   });
 
   //Let users know when someone leaves the chat.
