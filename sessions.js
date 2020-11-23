@@ -1,7 +1,5 @@
 const express = require("express");
-const { readSync } = require("fs");
 const router = express.Router();
-const io = require("socket.io");
 
 const activeSessions = [];
 router.get("/api/sessions", (req, res) => {
