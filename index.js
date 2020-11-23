@@ -23,7 +23,7 @@ const io = require("socket.io")(server, {
 });
 
 io.on("connection", (socket) => {
-   console.log("new connection");
+  console.log("new connection");
   //Broadcast when an user connects.
   socket.broadcast.emit("message", {
     sender: "server",
@@ -37,13 +37,20 @@ io.on("connection", (socket) => {
   });
 
   //Listen for a chatMessage
-  socket.on("chatMessage", ({sender, message}) => {
+  socket.on("chatMessage", ({ sender, message }) => {
     io.emit("message", {
-        sender,
-        message,
-      });
+      sender,
+      message,
+    });
   });
 
+  socket.on("reactionMessage", ({ sender, message }) => {
+    // io.emit("message", {
+    // sender,
+    // message,
+    // });
+    console.log("Reaction Recieved:" + message);
+  });
   socket.on("teacher_feedback", (msg) => {
     console.log(msg);
   });
