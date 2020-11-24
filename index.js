@@ -63,17 +63,23 @@ io.on("connection", (socket) => {
   //Listen for teacher feedback
   socket.on("start_quiz", ({ room }) => {
     let session = getSession(room);
+    const offset =  1 - (session.questions.length);
     session.currentIndex = 0;
     io.to(room).emit("quiz_start", true);
-    io.to(room).emit("question", session.questions[0]);
+    io.to(room).emit("question", {offset:offset, question:session.questions[0]});
   });
 
   socket.on("next_question", ({ room }) => {
     let session = getSession(room);
     if (session.currentIndex + 1 < session.questions.length) {
+      const offset =  (session.currentIndex + 1) - (session.questions.length-1);
       session.currentIndex++;
-      io.to(room).emit("question", session.questions[session.currentIndex]);
+      io.to(room).emit("question", {offset, question:session.questions[session.currentIndex]});
     }
+  });
+
+  socket.on("end_quiz", ({ room }) => {
+    io.to(room).emit("quiz_start", false);
   });
 
 
