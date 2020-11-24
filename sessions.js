@@ -10,6 +10,8 @@ router.post("/api/create-session", (req, res) => {
   let newSession = {
     pin: generatePin(),
     started: false,
+    quizEnded: false,
+    currentIndex:0,
     participants: [],
     ...req.body,
   };
@@ -107,5 +109,9 @@ function getUser(pin, uid){
   return activeSessions[index].participants.find(user => user.localId === uid);;
 }
 
+function endSession(pin){
+  let index = findSessionIndex(pin);
+  activeSessions.splice(index, 1);
+}
 
-module.exports = {router, getSession, getUser};
+module.exports = {router, getSession, getUser, endSession};
