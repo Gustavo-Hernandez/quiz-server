@@ -1,16 +1,16 @@
 const express = require("express");
-const sessions = require("./sessions");
+const {router, getSession} = require("./sessions");
 const cors = require("cors");
-const morgan = require("morgan");
-
+const morgan = require("morgan")
 const app = express();
+
 
 const SERVERPORT = process.env.PORT || 8080;
 
 app.use(cors());
 app.use(morgan("short"));
 app.use(express.json());
-app.use(sessions);
+app.use(router);
 
 const server = app.listen(SERVERPORT, () => {
   console.log("Server is up and running on port " + SERVERPORT);
@@ -59,6 +59,23 @@ io.on("connection", (socket) => {
   socket.on("teacher_feedback", ({ message, room }) => {
     io.to(room).emit("feedback", message);
   });
+
+  //Listen for teacher feedback
+  socket.on("start_quiz", ({ room }) => {
+    let session = getSession(room);
+    session.currentIndex = 0;
+    io.to(room).emit("quiz_start", true);
+    io.to(room).emit("question", session.questions[0]);
+  });
+
+  socket.on("next_question", ({ room }) => {
+    let session = getSession(room);
+    if (session.currentIndex + 1 < session.questions.length) {
+      session.currentIndex++;
+      io.to(room).emit("question", session.questions[session.currentIndex]);
+    }
+  });
+
 
   //Let users know when someone leaves the chat.
   socket.on("disconnect", () => {

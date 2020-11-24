@@ -46,10 +46,12 @@ router.post("/api/join-session", (req, res) => {
       return res.json({
         success: true,
         message: "Joined successfully",
+        questions: activeSessions[index].questions,
+        title: activeSessions[index].classname,
         user: {
           username,
           score: 0,
-          localId: tempId
+          localId: tempId,  
         },
       });
     }
@@ -94,4 +96,10 @@ function findSessionIndex(pin) {
   return -1;
 }
 
-module.exports = router;
+function getSession(pin){
+  let index = findSessionIndex(pin);
+  return activeSessions[index];
+}
+
+
+module.exports = {router, getSession};
