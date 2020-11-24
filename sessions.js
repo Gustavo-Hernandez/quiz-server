@@ -41,6 +41,7 @@ router.post("/api/join-session", (req, res) => {
       activeSessions[index].participants.push({
         username,
         score: 0,
+        answers: new Array(activeSessions[index].questions.length).fill(null),
         localId: tempId
       });
       return res.json({
@@ -101,6 +102,10 @@ function getSession(pin){
   return activeSessions[index];
 }
 
+function getUser(pin, uid){
+  let index = findSessionIndex(pin);
+  return activeSessions[index].participants.find(user => user.localId === uid);;
+}
 
 
-module.exports = {router, getSession};
+module.exports = {router, getSession, getUser};
