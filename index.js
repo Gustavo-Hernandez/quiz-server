@@ -93,7 +93,11 @@ io.on("connection", (socket) => {
   });
 
   socket.on("end_quiz", ({ room }) => {
+    let session =  getSession(room);
+    let participants = session.participants
+    participants.shift();
     io.to(room).emit("quiz_start", false);
+    io.to(room).emit("results", participants );
   });
 
   //Let users know when someone leaves the chat.
